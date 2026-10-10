@@ -1,0 +1,358 @@
+@if (!isLoggedIn) {
+
+  <div class="login-page">
+
+    <div class="login-card">
+
+      <h1>Employee Monitoring</h1>
+
+      <p>Fuel Station Location Management</p>
+
+      <form (ngSubmit)="login()">
+
+        <label for="username">
+          Username
+        </label>
+
+        <input
+          id="username"
+          type="text"
+          name="username"
+          [(ngModel)]="username"
+          placeholder="Enter username"
+          required
+        />
+
+        <label for="password">
+          Password
+        </label>
+
+        <input
+          id="password"
+          type="password"
+          name="password"
+          [(ngModel)]="password"
+          placeholder="Enter password"
+          required
+        />
+
+        @if (loginError) {
+          <div class="login-error">
+            {{ loginError }}
+          </div>
+        }
+
+        <button type="submit" class="login-button">
+          Login
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+} @else {
+
+  <div class="dashboard">
+
+    <header class="dashboard-header">
+
+      <div>
+        <h1>Employee Monitoring</h1>
+        <p>Fuel Station Location Management</p>
+      </div>
+
+      <div>
+        <button class="refresh-button" (click)="refresh()">
+          ↻ Refresh
+        </button>
+
+        <button class="logout-button" (click)="logout()">
+          Logout
+        </button>
+      </div>
+
+    </header>
+
+    <section class="summary-grid">
+
+      <div class="summary-card">
+        <div class="card-title">Total Employees</div>
+        <div class="card-number">
+          {{ employees.length }}
+        </div>
+      </div>
+
+      <div class="summary-card inside-card">
+        <div class="card-title">Inside Station</div>
+        <div class="card-number">
+          {{ insideCount }}
+        </div>
+      </div>
+
+      <div class="summary-card outside-card">
+        <div class="card-title">Outside Station</div>
+        <div class="card-number">
+          {{ outsideCount }}
+        </div>
+      </div>
+
+      <div class="summary-card stale-card">
+        <div class="card-title">Stale Location</div>
+        <div class="card-number">
+          {{ staleCount }}
+        </div>
+      </div>
+
+      <div class="summary-card warning-card">
+        <div class="card-title">No Location</div>
+        <div class="card-number">
+          {{ noLocationCount }}
+        </div>
+      </div>
+
+    </section>
+
+    <section class="map-section">
+
+      <div class="section-header">
+        <div>
+          <h2>Live Employee Map</h2>
+
+          <p class="map-description">
+            Latest employee GPS locations
+          </p>
+        </div>
+      </div>
+
+      <div id="map"></div>
+
+    </section>
+    <section class="attendance-section">
+
+  <div class="section-header">
+    <div>
+      <h2>Attendance</h2>
+      <p class="map-description">
+        Employee check-in and check-out records
+      </p>
+    </div>
+  </div>
+
+  <div class="attendance-table-container">
+
+    <table class="attendance-table">
+
+      <thead>
+        <tr>
+          <th>Employee ID</th>
+          <th>Employee</th>
+          <th>Date</th>
+          <th>Check In</th>
+          <th>Check Out</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        @for (attendance of attendances; track attendance.id) {
+
+          <tr>
+
+            <td>{{ attendance.employee_id }}</td>
+
+            <td>{{ attendance.employee_name }}</td>
+
+            <td>{{ attendance.date }}</td>
+
+            <td>
+              {{ attendance.check_in
+                ? (attendance.check_in | date:'short')
+                : '-' }}
+            </td>
+
+            <td>
+              {{ attendance.check_out
+                ? (attendance.check_out | date:'short')
+                : '-' }}
+            </td>
+
+            <td>
+
+              @if (attendance.check_out) {
+                <span class="attendance-status completed">
+                  Completed
+                </span>
+              } @else if (attendance.check_in) {
+                <span class="attendance-status working">
+                  Working
+                </span>
+              } @else {
+                <span class="attendance-status absent">
+                  Not Checked In
+                </span>
+              }
+
+            </td>
+
+          </tr>
+
+        }
+
+        @if (attendances.length === 0) {
+
+          <tr>
+            <td colspan="6" class="no-attendance">
+              No attendance records found.
+            </td>
+          </tr>
+
+        }
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</section>
+
+    <section class="employee-section">
+
+      <div class="section-header">
+
+        <h2>Employee Status</h2>
+
+        <span class="employee-count">
+          {{ employees.length }} Employees
+        </span>
+
+      </div>
+
+      <div class="table-container">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Employee ID</th>
+              <th>Employee</th>
+              <th>Station</th>
+              <th>Distance</th>
+              <th>Geofence</th>
+              <th>Status</th>
+              <th>Last Updated</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            @for (employee of employees; track employee.employee_id) {
+
+              <tr>
+
+                <td>
+                  <strong>
+                    {{ employee.employee_id }}
+                  </strong>
+                </td>
+
+                <td>
+                  {{ employee.employee_name }}
+                </td>
+
+                <td>
+                  {{ employee.station || 'Not Assigned' }}
+                </td>
+
+                <td>
+                  @if (employee.distance_meters !== null) {
+                    {{ employee.distance_meters | number:'1.0-2' }} m
+                  } @else {
+                    —
+                  }
+                </td>
+
+                <td>
+                  @if (
+                    employee.geofence_radius_meters !== null &&
+                    employee.geofence_radius_meters !== undefined
+                  ) {
+                    {{ employee.geofence_radius_meters }} m
+                  } @else {
+                    —
+                  }
+                </td>
+
+                <td>
+
+                  <span
+                    class="status-badge"
+                    [class]="getStatusClass(employee.status)"
+                  >
+
+                    @if (employee.status === 'INSIDE') {
+                      🟢
+                    }
+
+                    @if (employee.status === 'OUTSIDE') {
+                      🔴
+                    }
+
+                    @if (employee.status === 'STALE') {
+                      🟠
+                    }
+
+                    @if (employee.status === 'NO_LOCATION') {
+                      ⚪
+                    }
+
+                    @if (employee.status === 'UNASSIGNED') {
+                      ⚫
+                    }
+
+                    {{ employee.status }}
+
+                  </span>
+
+                </td>
+
+                <td>
+
+                  @if (employee.last_updated) {
+                    {{ employee.last_updated | date:'medium' }}
+                  } @else {
+                    —
+                  }
+
+                </td>
+
+              </tr>
+
+            }
+
+            @if (employees.length === 0) {
+
+              <tr>
+
+                <td colspan="7" class="empty-state">
+                  No employee data available.
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+  </div>
+
+}

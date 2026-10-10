@@ -1,0 +1,35 @@
+
+# Python / Django
+__pycache__/
+*.py[cod]
+*.log
+venv/
+.venv/
+env/
+.env
+.env.*
+!.env.example
+db.sqlite3
+staticfiles/
+media/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+coverage/
+
+# Android / Gradle
+.gradle/
+**/build/
+local.properties
+*.jks
+*.keystore
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+fronted/.git-backup/
+backend/backend/settings.py
